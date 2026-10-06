@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+node_modules/
+.wrangler/
+.openai/
+.agents/
+*.zip
+artist-profile-preview.html
+desktop*.png
+mobile*.png
