@@ -5,6 +5,7 @@
   const reducedQuery = matchMedia('(prefers-reduced-motion: reduce)');
   let reduced = reducedQuery.matches;
   const carousel = document.querySelector('.carousel');
+  carousel.classList.add('captions-managed');
   const viewport = document.querySelector('.carousel-viewport');
   const ring = document.querySelector('.carousel-ring');
   const cards = [...document.querySelectorAll('.category-card')];
@@ -14,7 +15,7 @@
   const statement = document.querySelector('.hero-statement');
   const buttons = cards.map(card => card.querySelector('button'));
   const lines = [...statement.querySelectorAll('h1>span')];
-  let active = -1, scheduled = false;
+  let active = -1, scheduled = false, captionsVisible = null;
   let height = innerHeight, width = innerWidth, carouselTop = 0, travel = 1, statementTop = 0, radius = 0;
   let lastRotation = null, lastReveal = null, nativeAnimations = [];
   let layoutKey = '';
@@ -76,6 +77,12 @@
     if (reduced) return;
     const y = scrollY, position = clamp((y-carouselTop)/travel,0,1)*(cards.length-1);
     markActive(Math.round(position));
+    // The first caption waits for the carousel to arrive; later ones fade on activation.
+    // Reuse cached geometry and write only when entering or leaving its visible range.
+    const showCaptions = carouselTop-y < height*.45 && y < carouselTop+travel+height;
+    if (showCaptions !== captionsVisible) {
+      captionsVisible = showCaptions;carousel.classList.toggle('captions-visible',showCaptions);
+    }
     if (nativeAnimations.length) return;
     const rotation = -position*step;
     if (rotation !== lastRotation) {

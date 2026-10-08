@@ -36,8 +36,8 @@
     if (files.has(key)) return files.get(key);
     const promise = new Promise((resolve,reject) => {
       const el = document.createElement(type === 'style' ? 'link' : 'script');
-      if (type === 'style') {el.rel = 'stylesheet';el.href = `${path}?v=load-20261008`;}
-      else {el.src = `${path}?v=load-20261008`;el.async = false;}
+      if (type === 'style') {el.rel = 'stylesheet';el.href = `${path}?v=motion-20261008`;}
+      else {el.src = `${path}?v=motion-20261008`;el.async = false;}
       el.onload = resolve;
       el.onerror = () => {files.delete(key);el.remove();reject(new Error('Style could not load'));};
       document.head.append(el);
@@ -49,7 +49,7 @@
       const key = `preload:${path}`;
       if (files.has(key)) return;
       const link = document.createElement('link');
-      link.rel = 'preload';link.as = 'script';link.href = `${path}?v=load-20261008`;
+      link.rel = 'preload';link.as = 'script';link.href = `${path}?v=motion-20261008`;
       document.head.append(link);files.set(key,true);
     });
   }

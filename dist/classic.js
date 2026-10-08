@@ -8,7 +8,7 @@
   const subtitles = ['The first impression','An idea, distilled','A moment of attention','Stories in motion','A different kind of possible','An experience online','Design you can hold'];
   data.categories.forEach((category,index) => {
     const card = document.createElement('article');
-    card.className = 'c-work-card';card.dataset.reveal = index % 3 === 1 ? 'shutter' : 'plane';
+    card.className = 'c-work-card';card.dataset.reveal = 'plane';
     card.innerHTML = `<div class="c-card-inner"><div class="c-card-art c-cell-${index}" role="img" aria-label="Temporary illustration for ${category.title}"></div><div class="c-card-glint"></div><div class="c-card-copy"><div><h3>${category.title}</h3><p>${subtitles[index]}</p></div><button class="c-card-open" type="button" aria-label="Explore ${category.title}" data-classic-category="${index}">${arrow}</button></div></div>`;
     grid.append(card);
   });
@@ -93,7 +93,7 @@
   const ambient = root.querySelector('.c-ambient');
   const progress = root.querySelector('.c-progress');
   let frame = 0, pointer = null, pointerDirty = false, cardPoint = null, lastCard = null;
-  let height = innerHeight, width = innerWidth, maxScroll = 1, compositionTop = 0, compositionHeight = 0, lastProgress = -1;
+  let height = innerHeight, width = innerWidth, maxScroll = 1, compositionTop = 0, compositionHeight = 0, compositionLeft = 0, compositionWidth = 0, lastProgress = -1, lastCompositionLight = -1;
   let lastPointerType = finePointer.matches ? 'mouse' : 'touch';
   let progressAnimation = null;
   if (timeline) {
@@ -113,11 +113,28 @@
       return smooth(clamp(1-Math.hypot(dx,dy)/60));
     });
   }
+  function readCompositionLight(y) {
+    const top = compositionTop-y;
+    if (top >= height || top+compositionHeight <= 0) return 0;
+    const centre = top+compositionHeight/2;
+    // Entry is dark even on a desktop where the monogram is already in view.
+    // Scroll into it to light it; the same curve reverses on returning to the top.
+    const scrollLight = smooth(clamp(y/Math.max(1,height*.18))) *
+      smooth(clamp((height*.9-centre)/Math.max(1,height*.34)));
+    let pointerLight = 0;
+    if (pointer && !dialog.open) {
+      const dx = Math.max(compositionLeft-pointer.x,0,pointer.x-compositionLeft-compositionWidth);
+      const dy = Math.max(top-pointer.y,0,pointer.y-top-compositionHeight);
+      pointerLight = smooth(clamp(1-Math.hypot(dx,dy)/120));
+    }
+    return Math.max(scrollLight,pointerLight);
+  }
   function update() {
     frame = 0;
     const y = scrollY;
     // Finish every geometry read before changing any styles or animation times.
     const lights = readToolLights(y);
+    const compositionLight = readCompositionLight(y);
     const compositionRect = pointerDirty && pointer && !reduced.matches && compositionTop-y < height && compositionTop+compositionHeight-y > 0 ? composition.getBoundingClientRect() : null;
     const cardRect = pointerDirty && cardPoint && !reduced.matches ? cardPoint.card.getBoundingClientRect() : null;
     if (!progressAnimation) {
@@ -136,6 +153,10 @@
       const value = lights[index];
       if (Math.abs(value-tool.value) > .001) {tool.value = value;tool.icon.style.setProperty('--tool-light',value.toFixed(4));}
     });
+    if (Math.abs(compositionLight-lastCompositionLight) > .001) {
+      lastCompositionLight = compositionLight;
+      composition.style.setProperty('--composition-light',compositionLight.toFixed(4));
+    }
     if (pointerDirty && pointer && !reduced.matches) {
       // Limit inherited light variables to the ambient layer, not the whole portfolio.
       ambient.style.setProperty('--c-x',`${pointer.x}px`);ambient.style.setProperty('--c-y',`${pointer.y}px`);
@@ -156,6 +177,8 @@
     if (frame) {cancelAnimationFrame(frame);frame = 0;}
     height = innerHeight;width = innerWidth;maxScroll = Math.max(1,document.documentElement.scrollHeight-height);
     compositionTop = documentTop(composition);compositionHeight = composition.offsetHeight;
+    compositionWidth = composition.offsetWidth;compositionLeft = 0;
+    for (let node = composition;node;node = node.offsetParent) compositionLeft += node.offsetLeft;
     reveals.forEach(scene => scene.top = documentTop(scene.el));
     tools.forEach(tool => {
       tool.halfHeight = tool.icon.offsetHeight/2;tool.top = documentTop(tool.icon)+tool.halfHeight;tool.width = tool.icon.offsetWidth;
