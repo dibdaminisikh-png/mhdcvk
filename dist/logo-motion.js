@@ -40,6 +40,9 @@
         return {svg, letters};
       }
       function renderLetter(letter, progress, index) {
+        // The solid hold and hidden phase reuse exactly the same projected glyph.
+        if (letter.progress === progress) return;
+        letter.progress = progress;
         const {glyph, group, back, sides, front} = letter;
         if (progress <= .001) {group.style.opacity = '0';return;}
         group.style.opacity = '1';
@@ -71,10 +74,20 @@
       function paint(time) {
         frame = 0;
         const phase = time / 1000 % 4.94;
-        copies.forEach(({letters}) => letters.forEach((letter, i) => {
+        const master = copies[0].letters;
+        master.forEach((letter, i) => {
           const entering = (phase - .12 - i * .105) / .65;
           const leaving = (phase - 3.85 - (4 - i) * .105) / .65;
           renderLetter(letter, reduced.matches ? 1 : Math.max(0, Math.min(1, entering, 1 - leaving)), i);
+        });
+        // All three mobile copies share the same contours and phase. Project once.
+        copies.slice(1).forEach(({letters}) => letters.forEach((letter,i) => {
+          const source = master[i];
+          if (letter.progress === source.progress) return;
+          letter.progress = source.progress;letter.group.style.opacity = source.group.style.opacity;
+          if (source.progress <= .001) return;
+          ['front','back','sides'].forEach(name => letter[name].setAttribute('d',source[name].getAttribute('d')));
+          letter.back.style.opacity = source.back.style.opacity;letter.sides.style.opacity = source.sides.style.opacity;
         }));
         if (visible && !reduced.matches && !document.hidden) frame = requestAnimationFrame(paint);
       }

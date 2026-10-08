@@ -41,4 +41,6 @@ Reduced-motion users get a native horizontal carousel with functioning navigatio
 
 The logo is a static solid wordmark and the menu opens immediately with reduced motion. Physics only starts after the visitor explicitly clicks its trigger. Matter.js is served locally with its MIT license; no CDN script request is required. Logo rendering pauses offscreen, and physics pauses when the tab is hidden.
 
+Scroll rendering uses native scroll timelines when the engine supports the animation range API, with the same geometry, timing and easing in a cached frame-based fallback. Classic pointer and scroll work shares one animation frame; geometry reads finish before writes, and distant tool icons are not measured. Mouse-light variables are scoped to the ambient layer. Funky slide controls update only when the active category changes; ring and headline geometry is measured on layout changes instead of every scroll. SVG logo projections are reused during the unchanged solid hold and hidden phase; the three identical mobile copies share one projection during movement. Resizes reuse native animations where possible. The visual styles and reverse-scroll behavior are preserved.
+
 Both current styles are English-only. The source history retains earlier designs.

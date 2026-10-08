@@ -12,56 +12,91 @@
   const prev = document.querySelector('.carousel-prev');
   const next = document.querySelector('.carousel-next');
   const statement = document.querySelector('.hero-statement');
-  let active = 0;
-  let scheduled = false;
+  const buttons = cards.map(card => card.querySelector('button'));
+  const lines = [...statement.querySelectorAll('h1>span')];
+  let active = -1, scheduled = false;
+  let height = innerHeight, width = innerWidth, carouselTop = 0, travel = 1, statementTop = 0, radius = 0;
+  let lastRotation = null, lastReveal = null, nativeAnimations = [];
+  let layoutKey = '';
+  let timeline = null;
+  try {
+    if (typeof ScrollTimeline !== 'undefined' && CSS.supports('animation-range-end','1px') && 'rangeStart' in Animation.prototype)
+      timeline = new ScrollTimeline({source:document.documentElement,axis:'block'});
+  } catch (_) { /* Older engines use the cached frame-based path. */ }
   const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
   const step = 360 / cards.length;
-  function markActive(index) {
-    active = clamp(index, 0, cards.length - 1);
-    cards.forEach((card, i) => {
-      card.classList.toggle('is-active', i === active);
-      card.querySelector('button').tabIndex = reduced || i === active ? 0 : -1;
-      card.querySelector('button').disabled = !reduced && i !== active;
+  function documentTop(el) {let top = 0;for (let node = el;node;node = node.offsetParent) top += node.offsetTop;return top;}
+  function markActive(index,force = false) {
+    index = clamp(index,0,cards.length-1);
+    if (!force && index === active) return;
+    active = index;
+    cards.forEach((card,i) => {
+      card.classList.toggle('is-active',i === active);
+      const tabIndex = reduced || i === active ? 0 : -1, disabled = !reduced && i !== active;
+      if (buttons[i].tabIndex !== tabIndex) buttons[i].tabIndex = tabIndex;
+      if (buttons[i].disabled !== disabled) buttons[i].disabled = disabled;
     });
     if (label.textContent !== names[active]) label.textContent = names[active];
-    prev.disabled = active === 0;
-    next.disabled = active === cards.length - 1;
+    prev.disabled = active === 0;next.disabled = active === cards.length-1;
   }
   function layout() {
-    document.body.classList.toggle('js-carousel', !reduced);
+    height = innerHeight;width = innerWidth;
+    document.body.classList.toggle('js-carousel',!reduced);
     if (!reduced) {
-      const width = cards[0].offsetWidth;
-      const radius = (width + innerWidth * (innerWidth < 600 ? .16 : .3)) / (2 * Math.tan(Math.PI / cards.length));
-      ring.style.setProperty('--radius', `${radius}px`);
-      cards.forEach((card, i) => card.style.setProperty('--angle', `${i * step}deg`));
-    }
-    update();
+      const cardWidth = cards[0].offsetWidth;
+      radius = (cardWidth+width*(width<600 ? .16 : .3))/(2*Math.tan(Math.PI/cards.length));
+      ring.style.setProperty('--radius',`${radius}px`);
+      cards.forEach((card,i) => card.style.setProperty('--angle',`${i*step}deg`));
+    } else ring.style.removeProperty('transform');
+    carouselTop = documentTop(carousel);travel = Math.max(1,carousel.offsetHeight-height);statementTop = documentTop(statement);
+    const key = `${width}:${height}:${radius}:${carouselTop}:${travel}:${statementTop}:${reduced}`;
+    if (key === layoutKey) {update();return;}
+    layoutKey = key;
+    lastRotation = lastReveal = null;
+    if (timeline && !reduced) {
+      try {
+        const frames = [[
+          {transform:`translateZ(${-radius}px) rotateY(0deg)`},
+          {transform:`translateZ(${-radius}px) rotateY(${-step*(cards.length-1)}deg)`}
+        ],...lines.map((line,i) => [
+          {transform:`translateX(${(i%2 ? 1 : -1)*width*.18}px)`},{transform:'translateX(0px)'}
+        ])];
+        const ranges = [[carouselTop,carouselTop+travel],...lines.map(() => [statementTop-height,statementTop-height*.25])];
+        if (nativeAnimations.length) nativeAnimations.forEach((animation,i) => {
+          animation.effect.setKeyframes(frames[i]);
+          animation.rangeStart = `${ranges[i][0]}px`;animation.rangeEnd = `${ranges[i][1]}px`;
+        });
+        else [ring,...lines].forEach((target,i) => nativeAnimations.push(target.animate(frames[i],{timeline,rangeStart:`${ranges[i][0]}px`,rangeEnd:`${ranges[i][1]}px`,fill:'both'})));
+      } catch (_) {nativeAnimations.forEach(animation => animation.cancel());nativeAnimations = [];}
+    } else {nativeAnimations.forEach(animation => animation.cancel());nativeAnimations = [];}
+    markActive(Math.max(0,active),true);update();
   }
   function update() {
     scheduled = false;
-    if (!reduced) {
-      const travel = Math.max(1, carousel.offsetHeight - innerHeight);
-      const progress = clamp((scrollY - carousel.offsetTop) / travel, 0, 1);
-      const position = progress * (cards.length - 1);
-      ring.style.setProperty('--rotation', `${-position * step}deg`);
-      markActive(Math.round(position));
-      const rect = statement.getBoundingClientRect();
-      const reveal = clamp((innerHeight - rect.top) / (innerHeight * .75), 0, 1);
-      statement.querySelectorAll('h1>span').forEach((line, i) => {
-        const direction = i % 2 ? 1 : -1;
-        line.style.transform = `translateX(${direction * (1 - reveal) * innerWidth * .18}px)`;
-      });
+    if (reduced) return;
+    const y = scrollY, position = clamp((y-carouselTop)/travel,0,1)*(cards.length-1);
+    markActive(Math.round(position));
+    if (nativeAnimations.length) return;
+    const rotation = -position*step;
+    if (rotation !== lastRotation) {
+      lastRotation = rotation;
+      // Updating transform directly avoids cascading a changing custom property to every card.
+      ring.style.transform = `translateZ(${-radius}px) rotateY(${rotation}deg)`;
+    }
+    const reveal = clamp((height-(statementTop-y))/(height*.75),0,1);
+    if (reveal !== lastReveal) {
+      lastReveal = reveal;
+      lines.forEach((line,i) => line.style.transform = `translateX(${(i%2 ? 1 : -1)*(1-reveal)*width*.18}px)`);
     }
   }
-  function schedule() { if (!scheduled) { scheduled = true; requestAnimationFrame(update); } }
+  function schedule() {if (!scheduled) {scheduled = true;requestAnimationFrame(update);}}
   function goTo(index) {
     index = clamp(index, 0, cards.length - 1);
     if (reduced) {
       viewport.scrollTo({left:cards[index].offsetLeft - (viewport.clientWidth - cards[index].clientWidth) / 2,behavior:'auto'});
       markActive(index);
     } else {
-      const travel = carousel.offsetHeight - innerHeight;
-      window.scrollTo({top: carousel.offsetTop + index / (cards.length - 1) * travel, behavior:'smooth'});
+      window.scrollTo({top:carouselTop+index/(cards.length-1)*travel,behavior:'smooth'});
     }
   }
   prev.addEventListener('click', () => goTo(active - 1));
@@ -97,6 +132,8 @@
   viewport.addEventListener('pointercancel', () => {pointerStart = null;});
   reducedQuery.addEventListener('change', () => {reduced = reducedQuery.matches;layout();});
   layout();
+  document.fonts.ready.then(layout);
+  new ResizeObserver(layout).observe(document.querySelector('#funky-root'));
   const menu = document.querySelector('#site-menu');
   const menuToggle = document.querySelector('.menu-toggle');
   const workDialog = document.querySelector('#work-dialog');

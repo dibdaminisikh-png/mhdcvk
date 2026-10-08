@@ -35,114 +35,166 @@
     for (let node = el;node;node = node.offsetParent) top += node.offsetTop;
     return top;
   }
-  function pausedAnimation(el,from,to) {
-    const animation = el.animate([from,to],{duration:1000,fill:'both',easing:'cubic-bezier(.16,1,.3,1)'});
-    animation.pause();animation.currentTime = 0;
-    return animation;
-  }
+  const easing = 'cubic-bezier(.16,1,.3,1)';
+  let timeline = null;
+  try {
+    if (typeof ScrollTimeline !== 'undefined' && CSS.supports('animation-range-end','1px') && 'rangeStart' in Animation.prototype)
+      timeline = new ScrollTimeline({source:document.documentElement,axis:'block'});
+  } catch (_) { /* The frame-based path works without scroll timelines. */ }
   const reveals = [...root.querySelectorAll('[data-reveal]')].map(el => {
-    const animations = [];
+    const effects = [];
+    const add = (target,from,to) => effects.push({target,frames:[from,to],animation:null});
     const style = el.dataset.reveal;
-    if (style === 'plane') animations.push(pausedAnimation(el,{opacity:0,transform:'perspective(1200px) rotateX(12deg) translateY(55px)'},{opacity:1,transform:'none'}));
+    if (style === 'plane') add(el,{opacity:0,transform:'perspective(1200px) rotateX(12deg) translateY(55px)'},{opacity:1,transform:'none'});
     if (style === 'shutter') {
-      animations.push(pausedAnimation(el,{transform:'translateY(20px)'},{transform:'none'}));
-      animations.push(pausedAnimation(el.querySelector('.c-card-inner'),{clipPath:'inset(0 0 100% 0 round 18px)'},{clipPath:'inset(0 0 0 0 round 18px)'}));
+      add(el,{transform:'translateY(20px)'},{transform:'none'});
+      add(el.querySelector('.c-card-inner'),{clipPath:'inset(0 0 100% 0 round 18px)'},{clipPath:'inset(0 0 0 0 round 18px)'});
     }
-    if (style === 'focus') animations.push(pausedAnimation(el,{opacity:0,filter:'blur(12px)',transform:'scale(.96)'},{opacity:1,filter:'blur(0px)',transform:'none'}));
+    if (style === 'focus') add(el,{opacity:0,filter:'blur(12px)',transform:'scale(.96)'},{opacity:1,filter:'blur(0px)',transform:'none'});
     if (style === 'ink') {
-      animations.push(pausedAnimation(el,{opacity:0,transform:'translateX(-20px)'},{opacity:1,transform:'none'}));
-      [...el.children].forEach(child => animations.push(pausedAnimation(child,{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)'})));
+      add(el,{opacity:0,transform:'translateX(-20px)'},{opacity:1,transform:'none'});
+      [...el.children].forEach(child => add(child,{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)'}));
     }
-    if (style === 'light') animations.push(pausedAnimation(el,{opacity:0,filter:'blur(6px)',transform:'translateY(20px)'},{opacity:1,filter:'blur(0px)',transform:'none'}));
-    return {el,animations,top:0,value:-1};
+    if (style === 'light') add(el,{opacity:0,filter:'blur(6px)',transform:'translateY(20px)'},{opacity:1,filter:'blur(0px)',transform:'none'});
+    return {el,effects,top:0,value:-1,visible:false,key:'',native:false};
   });
-  const tools = [...root.querySelectorAll('.c-tool')].map(el => ({el,icon:el.querySelector('.c-tool-icon'),top:0,value:-1}));
+  function configureScene(scene) {
+    const key = `${scene.top}:${height}:${reduced.matches}`;
+    if (scene.key === key) return;
+    scene.key = key;scene.value = -1;
+    const useNative = !!timeline && !reduced.matches;
+    if (scene.native === useNative && scene.effects.every(effect => effect.animation)) {
+      if (useNative) scene.effects.forEach(effect => {
+        effect.animation.rangeStart = `${scene.top-height*.9}px`;
+        effect.animation.rangeEnd = `${scene.top-height*.56}px`;
+      });
+      return;
+    }
+    scene.effects.forEach(effect => effect.animation?.cancel());
+    scene.native = useNative;
+    const nativeOptions = {timeline,rangeStart:`${scene.top-height*.9}px`,rangeEnd:`${scene.top-height*.56}px`,fill:'both',easing};
+    try {
+      scene.effects.forEach(effect => {
+        effect.animation = effect.target.animate(effect.frames,scene.native ? nativeOptions : {duration:1000,fill:'both',easing});
+        if (!scene.native) {effect.animation.pause();effect.animation.currentTime = 0;}
+      });
+    } catch (_) {
+      scene.native = false;
+      scene.effects.forEach(effect => {
+        effect.animation?.cancel();
+        effect.animation = effect.target.animate(effect.frames,{duration:1000,fill:'both',easing});
+        effect.animation.pause();effect.animation.currentTime = 0;
+      });
+    }
+  }
+  const tools = [...root.querySelectorAll('.c-tool')].map(el => ({icon:el.querySelector('.c-tool-icon'),top:0,left:0,width:0,halfHeight:0,value:-1}));
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
-  let pointer = null, pointerFrame = 0, lastPointerType = finePointer.matches ? 'mouse' : 'touch';
   const composition = root.querySelector('.c-composition');
-  function updatePointer() {
-    pointerFrame = 0;
-    updateToolLights();
-    if (!pointer || reduced.matches) return;
-    root.style.setProperty('--c-x',`${pointer.x}px`);root.style.setProperty('--c-y',`${pointer.y}px`);
-    const rect = composition.getBoundingClientRect();
-    composition.style.setProperty('--rx',String(Math.max(-1,Math.min(1,(pointer.x-(rect.left+rect.width/2))/innerWidth*2))));
-    composition.style.setProperty('--ry',String(Math.max(-1,Math.min(1,(pointer.y-(rect.top+rect.height/2))/innerHeight*2))));
+  const ambient = root.querySelector('.c-ambient');
+  const progress = root.querySelector('.c-progress');
+  let frame = 0, pointer = null, pointerDirty = false, cardPoint = null, lastCard = null;
+  let height = innerHeight, width = innerWidth, maxScroll = 1, compositionTop = 0, compositionHeight = 0, lastProgress = -1;
+  let lastPointerType = finePointer.matches ? 'mouse' : 'touch';
+  let progressAnimation = null;
+  if (timeline) {
+    try {progressAnimation = progress.animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{timeline,fill:'both'});}
+    catch (_) { /* Progress has the same frame-based fallback. */ }
+  }
+  function readToolLights(y) {
+    const scrollLighting = lastPointerType !== 'mouse';
+    return tools.map(tool => {
+      if (scrollLighting) return smooth(clamp((height*.78-(tool.top-y))/Math.max(1,height*.22)));
+      if (!pointer || dialog.open) return 0;
+      // An icon farther than its light radius cannot react; avoid querying its box.
+      if (Math.abs(tool.top-y-pointer.y) > tool.halfHeight+100 || pointer.x < tool.left-100 || pointer.x > tool.left+tool.width+100) return 0;
+      const rect = tool.icon.getBoundingClientRect();
+      const dx = Math.max(rect.left-pointer.x,0,pointer.x-rect.right);
+      const dy = Math.max(rect.top-pointer.y,0,pointer.y-rect.bottom);
+      return smooth(clamp(1-Math.hypot(dx,dy)/60));
+    });
+  }
+  function update() {
+    frame = 0;
+    const y = scrollY;
+    // Finish every geometry read before changing any styles or animation times.
+    const lights = readToolLights(y);
+    const compositionRect = pointerDirty && pointer && !reduced.matches && compositionTop-y < height && compositionTop+compositionHeight-y > 0 ? composition.getBoundingClientRect() : null;
+    const cardRect = pointerDirty && cardPoint && !reduced.matches ? cardPoint.card.getBoundingClientRect() : null;
+    if (!progressAnimation) {
+      const value = clamp(y/maxScroll);
+      if (value !== lastProgress) {lastProgress = value;progress.style.transform = `scaleX(${value})`;}
+    }
+    reveals.forEach(scene => {
+      const value = reduced.matches ? 1 : clamp((height*.9-(scene.top-y))/Math.max(1,height*.34));
+      if (Math.abs(value-scene.value) < .0001) return;
+      scene.value = value;
+      if (!scene.native) scene.effects.forEach(effect => effect.animation.currentTime = value*1000);
+      const visible = value >= .999;
+      if (visible !== scene.visible) {scene.visible = visible;scene.el.classList.toggle('is-visible',visible);}
+    });
+    tools.forEach((tool,index) => {
+      const value = lights[index];
+      if (Math.abs(value-tool.value) > .001) {tool.value = value;tool.icon.style.setProperty('--tool-light',value.toFixed(4));}
+    });
+    if (pointerDirty && pointer && !reduced.matches) {
+      // Limit inherited light variables to the ambient layer, not the whole portfolio.
+      ambient.style.setProperty('--c-x',`${pointer.x}px`);ambient.style.setProperty('--c-y',`${pointer.y}px`);
+      if (compositionRect) {
+        composition.style.setProperty('--rx',String(Math.max(-1,Math.min(1,(pointer.x-(compositionRect.left+compositionRect.width/2))/width*2))));
+        composition.style.setProperty('--ry',String(Math.max(-1,Math.min(1,(pointer.y-(compositionRect.top+compositionRect.height/2))/height*2))));
+      }
+      if (cardRect) {
+        cardPoint.card.style.setProperty('--gx',`${pointer.x-cardRect.left}px`);cardPoint.card.style.setProperty('--gy',`${pointer.y-cardRect.top}px`);
+        cardPoint.card.style.setProperty('--tx',String((pointer.x-cardRect.left)/cardRect.width*2-1));
+        cardPoint.card.style.setProperty('--ty',String((pointer.y-cardRect.top)/cardRect.height*2-1));
+      }
+    }
+    pointerDirty = false;
+  }
+  function schedule() {if (!frame) frame = requestAnimationFrame(update);}
+  function measure() {
+    if (frame) {cancelAnimationFrame(frame);frame = 0;}
+    height = innerHeight;width = innerWidth;maxScroll = Math.max(1,document.documentElement.scrollHeight-height);
+    compositionTop = documentTop(composition);compositionHeight = composition.offsetHeight;
+    reveals.forEach(scene => scene.top = documentTop(scene.el));
+    tools.forEach(tool => {
+      tool.halfHeight = tool.icon.offsetHeight/2;tool.top = documentTop(tool.icon)+tool.halfHeight;tool.width = tool.icon.offsetWidth;
+      let left = 0;for (let node = tool.icon;node;node = node.offsetParent) left += node.offsetLeft;
+      tool.left = left;
+    });
+    reveals.forEach(configureScene);
+    update();
+  }
+  function resetCard() {
+    if (lastCard) {lastCard.style.setProperty('--tx','0');lastCard.style.setProperty('--ty','0');}
+    lastCard = null;cardPoint = null;
   }
   root.addEventListener('pointermove',event => {
     if (event.pointerType !== 'mouse') return;
-    lastPointerType = 'mouse';
-    pointer = {x:event.clientX,y:event.clientY};
-    if (!pointerFrame) pointerFrame = requestAnimationFrame(updatePointer);
+    lastPointerType = 'mouse';pointer = {x:event.clientX,y:event.clientY};pointerDirty = true;
+    const card = event.target.closest('.c-card-inner');
+    if (card !== lastCard) {resetCard();lastCard = card;}
+    cardPoint = card ? {card} : null;schedule();
   },{passive:true});
   root.addEventListener('pointerleave',event => {
     if (event.pointerType !== 'mouse') return;
-    pointer = null;updateToolLights();
+    pointer = null;resetCard();schedule();
   });
   root.addEventListener('pointerdown',event => {
     lastPointerType = event.pointerType;
-    if (event.pointerType !== 'mouse') {pointer = null;updateToolLights();}
+    if (event.pointerType !== 'mouse') {pointer = null;resetCard();schedule();}
   },{passive:true});
-  root.querySelectorAll('.c-card-inner').forEach(card => {
-    card.addEventListener('pointermove',event => {
-      if (event.pointerType !== 'mouse' || reduced.matches) return;
-      const rect = card.getBoundingClientRect();
-      card.style.setProperty('--gx',`${event.clientX-rect.left}px`);card.style.setProperty('--gy',`${event.clientY-rect.top}px`);
-      card.style.setProperty('--tx',String((event.clientX-rect.left)/rect.width*2-1));
-      card.style.setProperty('--ty',String((event.clientY-rect.top)/rect.height*2-1));
-    },{passive:true});
-    card.addEventListener('pointerleave', () => {card.style.setProperty('--tx','0');card.style.setProperty('--ty','0');});
-  });
-  const progress = root.querySelector('.c-progress');
-  let scrollFrame = 0;
-  function updateToolLights() {
-    const scrollLighting = lastPointerType !== 'mouse';
-    const rectangles = !scrollLighting && pointer ? tools.map(tool => tool.icon.getBoundingClientRect()) : [];
-    tools.forEach((tool,index) => {
-      let value = 0;
-      if (scrollLighting) value = smooth(clamp((innerHeight*.78-(tool.top-scrollY))/Math.max(1,innerHeight*.22)));
-      else if (pointer && !dialog.open) {
-        const rect = rectangles[index];
-        const dx = Math.max(rect.left-pointer.x,0,pointer.x-rect.right);
-        const dy = Math.max(rect.top-pointer.y,0,pointer.y-rect.bottom);
-        value = smooth(clamp(1-Math.hypot(dx,dy)/60));
-      }
-      if (Math.abs(value-tool.value) > .001) {
-        tool.value = value;tool.icon.style.setProperty('--tool-light',value.toFixed(4));
-      }
-    });
-  }
-  function updateScroll() {
-    scrollFrame = 0;
-    progress.style.transform = `scaleX(${Math.max(0,Math.min(1,scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)))})`;
-    reveals.forEach(scene => {
-      const value = reduced.matches ? 1 : clamp((innerHeight*.9-(scene.top-scrollY))/Math.max(1,innerHeight*.34));
-      if (Math.abs(value-scene.value) < .0001) return;
-      scene.value = value;scene.animations.forEach(animation => animation.currentTime = value*1000);
-      scene.el.classList.toggle('is-visible',value >= .999);
-    });
-    updateToolLights();
-  }
-  function scheduleScroll() {if (!scrollFrame) scrollFrame = requestAnimationFrame(updateScroll);}
-  function measure() {
-    reveals.forEach(scene => scene.top = documentTop(scene.el));
-    tools.forEach(tool => tool.top = documentTop(tool.icon)+tool.icon.offsetHeight/2);
-    updateScroll();
-  }
   root.addEventListener('focusin',event => {
     const scene = reveals.find(scene => scene.el.contains(event.target));
-    if (scene && scene.value < .99) {
-      scene.el.scrollIntoView({block:'center',behavior:'instant'});updateScroll();
-    }
+    if (scene && scene.value < .99) {scene.el.scrollIntoView({block:'center',behavior:'instant'});schedule();}
   });
-  addEventListener('scroll',scheduleScroll,{passive:true});
+  addEventListener('scroll',schedule,{passive:true});
   addEventListener('resize',measure);
   reduced.addEventListener('change',measure);
   finePointer.addEventListener('change', () => {lastPointerType = finePointer.matches ? 'mouse' : 'touch';pointer = null;measure();});
-  // Font loading and responsive wrapping can move later sections without a window resize.
   new ResizeObserver(measure).observe(root);
   document.fonts.ready.then(measure);
-  dialog.addEventListener('close',scheduleScroll);
+  dialog.addEventListener('close',schedule);
   measure();
 
   const socialButtons = [...root.querySelectorAll('.c-contact-links .c-button')];
