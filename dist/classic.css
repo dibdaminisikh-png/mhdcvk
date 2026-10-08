@@ -45,7 +45,7 @@ body[data-mode="classic"]{background:#0c1023;color:#eeedf6;font-family:Acumin,Ar
 .c-ring::before{content:"";position:absolute;inset:-1px;border:1px solid #d8bdff88;border-radius:inherit;box-shadow:0 0 14px #ae82ff55,inset 0 0 10px #ae82ff33}
 .c-orb{position:absolute;width:23%;height:23%;right:0;bottom:9%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 28% 22%,#a39aaf33,#62507922 45%,#c5a2e417 72%,#c5b9d433);border:1px solid #e8ceff66;backdrop-filter:blur(12px);box-shadow:inset -10px -10px 20px #25203a88,0 18px 35px #02071355;transform:translateZ(130px)}
 .c-orb::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 28% 22%,#f2e5ff,#ba9de46b 18%,#62507933 45%,#c5a2e447 72%,#f6e3ffbb);pointer-events:none}
-.c-composition::before,.c-sheet-back::before,.c-sheet-front::before,.c-monogram::after,.c-ring::before,.c-orb::before{opacity:var(--composition-light);transition:opacity .5s cubic-bezier(.2,.8,.2,1)}
+.c-composition::before,.c-sheet-back::before,.c-sheet-front::before,.c-monogram::after,.c-ring::before,.c-orb::before{opacity:var(--composition-light);transition:opacity .9s cubic-bezier(.25,.1,.25,1)}
 .c-hero-tail{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:28px 0;border-top:1px solid var(--c-line);border-bottom:1px solid var(--c-line);color:#aaa6bf;font-size:14px}
 .c-hero-tail p{margin:0}
 .c-disciplines{display:flex;gap:25px;font-size:13px}
