@@ -16,3 +16,9 @@ Reference-supplied typography and decorative assets were fetched from its public
 - Heart: https://cdn.prod.website-files.com/699637b29cf8a85d12ebac48/69adee5e5a166df842c1bf6e_heart.avif
 
 Category art: original generated 3×3 contact sheet produced for the current adaptation, served locally as `dist/assets/category-scenes.webp`. Seven cells correspond to the seven requested categories. Actual client work is pending.
+
+`dist/assets/mahdi-outlines.json` contains the five MAHDI outlines generated from the Swell font above. `logo-motion.js` projects those contours to recreate the timing and extruded outline-to-solid motion of the reference’s 5.94-second hero loop. The original PIXEL video is not shipped.
+
+Matter.js 0.19.0, the MIT-licensed physics library used by the reference, is self-hosted at `dist/assets/vendor/matter.min.js`:
+- Source distribution: https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js
+- License: https://github.com/liabru/matter-js/blob/0.19.0/LICENSE (included as `MATTER-LICENSE.txt`).

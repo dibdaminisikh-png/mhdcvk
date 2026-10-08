@@ -1,0 +1,79 @@
+/* Reference motion: a staggered 3D wordmark, layered sidebar and tactile stickers. */
+.hero-logo{position:relative;height:20vw;min-height:0}
+.hero-logo .logo-line{display:none}
+.hero-logo:not(.logo-ready) .logo-line:first-child{display:flex}
+.logo-animation{display:block;width:100%;height:100%;overflow:visible}
+.hero-sticker,.skill-sticker,.heart-sticker,.contact-hand{pointer-events:auto;cursor:pointer;user-select:none;-webkit-user-drag:none;will-change:transform}
+.sticker-animation,.sticker-action,.sticker-wizard,.cursor-sticker,.thumb-sticker{transform:none}
+
+.menu-dialog{background:transparent;color:var(--lime);overflow:hidden}
+.menu-dialog::backdrop{background:transparent}
+.menu-scrim{position:absolute;inset:0;background:#13131366;opacity:0;transition:opacity .7s cubic-bezier(.65,.01,.05,.99)}
+.menu-panel{position:absolute;right:0;top:0;width:560px;max-width:100%;height:100%;transform:translateX(120%);transition:transform .7s cubic-bezier(.65,.01,.05,.99)}
+.menu-layers{position:absolute;inset:0}
+.menu-layer{position:absolute;inset:0;border-radius:20px 0 0 20px;transform:translateX(101%);transition:transform .575s cubic-bezier(.65,.01,.05,.99);background:var(--red)}
+.menu-layer:nth-child(2){background:var(--lime);transition-delay:.12s}
+.menu-layer:nth-child(3){background:var(--pink);transition-delay:.24s}
+.menu-dialog.is-opening .menu-panel,.menu-dialog.is-open .menu-panel{transform:none}
+.menu-dialog.is-open .menu-layer{transform:none}
+.menu-dialog.is-open .menu-scrim{opacity:1}
+.menu-top{position:absolute;top:0;left:0;right:0;z-index:3;pointer-events:none}
+.menu-top>*{pointer-events:auto}
+.menu-close .plus{transform:rotate(315deg)}
+.menu-close,.menu-toggle{overflow:hidden}
+.menu-toggle-label{height:1.2em;display:flex;flex-direction:column;overflow:hidden}
+.menu-toggle-label span{display:block;transition:transform .7s cubic-bezier(.65,.01,.05,.99)}
+.menu-toggle[aria-expanded="true"] .menu-toggle-label span{transform:translateY(-100%)}
+.menu-toggle .plus{transition:transform .7s cubic-bezier(.65,.01,.05,.99)}
+.menu-toggle[aria-expanded="true"] .plus{transform:rotate(315deg)}
+.menu-content{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:80px;padding:78px 0 32px;overflow:auto}
+.menu-content nav{display:block;flex:none}
+.menu-link-clip{overflow:hidden}
+.menu-content nav a{position:relative;display:flex;align-items:flex-start;gap:14px;width:100%;padding:18px 32px;font:400 90px/.85 Swell,Impact,sans-serif;transform:translateY(140%) rotate(10deg);transform-origin:0 100%;transition:transform .7s cubic-bezier(.65,.01,.05,.99);transition-delay:.35s;isolation:isolate}
+.menu-content nav .menu-link-clip:nth-child(2) a{transition-delay:.4s}
+.menu-content nav .menu-link-clip:nth-child(3) a{transition-delay:.45s}
+.menu-dialog.is-open .menu-content nav a{transform:none}
+.menu-content nav a::before{content:"";position:absolute;inset:0;background:var(--red);z-index:-1;transform:scaleY(0);transform-origin:50% 100%;transition:transform .55s cubic-bezier(.65,.05,0,1)}
+.menu-link-title{transition:transform .55s cubic-bezier(.65,.05,0,1)}
+.menu-content nav a:hover::before,.menu-content nav a:focus-visible::before{transform:scaleY(1)}
+.menu-content nav a:hover .menu-link-title,.menu-content nav a:focus-visible .menu-link-title{transform:translateX(12px)}
+.menu-arrow{width:18px;height:18px;flex:none;margin-top:5px;transition:transform .55s cubic-bezier(.65,.05,0,1)}
+.menu-content nav a:hover .menu-arrow{transform:translate(5px,-5px)}
+.menu-contact{display:block;padding:0 32px;font-size:14px;line-height:1.45}
+.menu-contact-columns{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:30px}
+.menu-contact p{margin:0}
+.menu-socials{display:flex;gap:25px;font-size:18px;font-weight:650}
+.menu-contact [data-menu-fade]{opacity:0;transform:translateY(50%);transition:opacity .7s cubic-bezier(.65,.01,.05,.99),transform .7s cubic-bezier(.65,.01,.05,.99);transition-delay:.55s}
+.menu-contact [data-menu-fade]:nth-child(2){transition-delay:.59s}
+.menu-dialog.is-open [data-menu-fade]{opacity:1;transform:none}
+.menu-dialog.is-closing .menu-panel{transform:translateX(120%)}
+.menu-dialog.is-closing .menu-scrim{opacity:0}
+
+.physics-overlay{position:fixed;inset:0;z-index:100;overflow:hidden;touch-action:none;cursor:grab;user-select:none}
+.physics-overlay.is-dragging{cursor:grabbing}
+.physics-object{position:absolute;left:0;top:0;margin:0!important;max-width:none!important;pointer-events:none!important;user-select:none!important;will-change:transform;transform-origin:50% 50%;animation:none!important;object-fit:contain}
+.physics-object.logo-animation{height:auto;background:var(--red);color:var(--pink)}
+.physics-controls{position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:101;display:flex;align-items:center;gap:18px;background:var(--lime);color:var(--brown);padding:12px 18px;border-radius:30px;max-width:calc(100% - 24px);box-shadow:0 5px 24px #200e0226;font-size:14px}
+.physics-controls button{border:0;background:var(--brown);color:var(--lime);border-radius:24px;padding:8px 16px;white-space:nowrap}
+.physics-controls button:focus-visible{outline-color:var(--blue)}
+.physics-active{overflow:hidden!important;touch-action:none}
+.physics-active .site-header{pointer-events:none}
+.physics-source-hidden{visibility:hidden!important}
+
+@media(max-width:991px){.hero-logo{height:23vw}.menu-content{padding-top:85px}}
+@media(max-width:600px){
+ .hero-logo{height:auto;aspect-ratio:auto}
+ .logo-animation{height:31vw}
+ .menu-panel{width:100%}
+ .menu-layer{border-radius:0}
+ .menu-content{padding-top:105px;padding-bottom:60px;gap:65px}
+ .menu-content nav a{font-size:60px;padding:24px 32px}
+ .menu-arrow{width:15px;height:15px;margin-top:3px}
+ .menu-contact{font-size:16px}
+ .menu-contact-columns{gap:18px;margin-bottom:32px}
+ .menu-socials{font-size:16px}
+ .physics-controls{font-size:12px;padding:8px 12px;gap:10px;top:12px;white-space:nowrap}
+}
+@media(max-width:360px){.menu-content nav a{font-size:52px;padding-left:24px;padding-right:24px}.menu-contact{padding-left:24px;padding-right:24px}.physics-controls span{white-space:normal}}
+@media(prefers-reduced-motion:reduce){.menu-panel,.menu-layer,.menu-content nav a,.menu-contact [data-menu-fade]{transform:none}.hero-logo .logo-line span{animation:none}.hero-sticker,.contact-hand{visibility:visible}.physics-object{visibility:visible}}
+@media print{.physics-overlay,.physics-controls{display:none!important}.physics-source-hidden{visibility:visible!important}}

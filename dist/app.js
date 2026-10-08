@@ -117,9 +117,6 @@
     });
     dialog.addEventListener('click', event => { if (event.target === dialog) closeDialog(dialog); });
   });
-  menuToggle.addEventListener('click', () => { openDialog(menu);menuToggle.setAttribute('aria-expanded','true'); });
-  document.querySelector('.menu-close').addEventListener('click', () => closeDialog(menu));
-  menu.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener('click', () => closeDialog(menu)));
   document.querySelector('.work-close').addEventListener('click', () => closeDialog(workDialog));
   document.querySelectorAll('[data-category]').forEach(button => button.addEventListener('click', () => {
     const index = Number(button.dataset.category);
@@ -129,12 +126,4 @@
     openDialog(workDialog);
   }));
   document.querySelector('#year').textContent = new Date().getFullYear();
-  let chaosTimer;
-  document.querySelector('#dont-click').addEventListener('click', () => {
-    clearTimeout(chaosTimer);
-    const notice = document.querySelector('.easter-notice');
-    document.body.classList.add('chaos');
-    notice.hidden = false;
-    chaosTimer = setTimeout(() => {document.body.classList.remove('chaos');notice.hidden = true;},5000);
-  });
 })();
