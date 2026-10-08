@@ -93,7 +93,7 @@
   const ambient = root.querySelector('.c-ambient');
   const progress = root.querySelector('.c-progress');
   let frame = 0, pointer = null, pointerDirty = false, cardPoint = null, lastCard = null;
-  let height = innerHeight, width = innerWidth, maxScroll = 1, compositionTop = 0, compositionHeight = 0, compositionLeft = 0, compositionWidth = 0, lastProgress = -1, lastCompositionLight = -1;
+  let height = innerHeight, width = innerWidth, maxScroll = 1, compositionTop = 0, compositionHeight = 0, compositionLightStart = 0, compositionLightEnd = 1, lastProgress = -1, lastCompositionLight = -1;
   let lastPointerType = finePointer.matches ? 'mouse' : 'touch';
   let progressAnimation = null;
   if (timeline) {
@@ -114,20 +114,9 @@
     });
   }
   function readCompositionLight(y) {
-    const top = compositionTop-y;
-    if (top >= height || top+compositionHeight <= 0) return 0;
-    const centre = top+compositionHeight/2;
-    // Entry is dark even on a desktop where the monogram is already in view.
-    // Scroll into it to light it; the same curve reverses on returning to the top.
-    const scrollLight = smooth(clamp(y/Math.max(1,height*.18))) *
-      smooth(clamp((height*.9-centre)/Math.max(1,height*.34)));
-    let pointerLight = 0;
-    if (pointer && !dialog.open) {
-      const dx = Math.max(compositionLeft-pointer.x,0,pointer.x-compositionLeft-compositionWidth);
-      const dy = Math.max(top-pointer.y,0,pointer.y-top-compositionHeight);
-      pointerLight = smooth(clamp(1-Math.hypot(dx,dy)/120));
-    }
-    return Math.max(scrollLight,pointerLight);
+    // One reversible scroll curve lights the letter, glass and reflections together.
+    // Keep it lit below the hero so returning upward never resets it abruptly.
+    return smooth(clamp((y-compositionLightStart)/(compositionLightEnd-compositionLightStart)));
   }
   function update() {
     frame = 0;
@@ -177,8 +166,9 @@
     if (frame) {cancelAnimationFrame(frame);frame = 0;}
     height = innerHeight;width = innerWidth;maxScroll = Math.max(1,document.documentElement.scrollHeight-height);
     compositionTop = documentTop(composition);compositionHeight = composition.offsetHeight;
-    compositionWidth = composition.offsetWidth;compositionLeft = 0;
-    for (let node = composition;node;node = node.offsetParent) compositionLeft += node.offsetLeft;
+    const compositionCentre = compositionTop+compositionHeight/2;
+    compositionLightStart = Math.max(0,compositionCentre-height*.85);
+    compositionLightEnd = Math.max(compositionLightStart+1,compositionCentre-height*.52,height*.18);
     reveals.forEach(scene => scene.top = documentTop(scene.el));
     tools.forEach(tool => {
       tool.halfHeight = tool.icon.offsetHeight/2;tool.top = documentTop(tool.icon)+tool.halfHeight;tool.width = tool.icon.offsetWidth;
