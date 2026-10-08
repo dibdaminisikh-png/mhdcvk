@@ -1,38 +1,29 @@
-# رزومه تصویری
+# MAHDI
 
-سایت فارسی، راست‌به‌چپ و یک‌صفحه‌ای، آماده میزبانی استاتیک رایگان روی Cloudflare Pages یا Workers Static Assets. به دیتابیس، سرویس پولی یا build نیاز ندارد.
+Mahdi Khorsand’s one-page English portfolio, rebuilt around the layout and interactions of https://pixel.melbourne/ at the owner’s request. Deployed at https://mhdcvk.pages.dev through the private GitHub repository and existing Cloudflare Pages integration.
 
-## مشاهده
+## Contents
 
-پوشه `dist` را باز کنید و `index.html` را در مرورگر ببینید. فایل مستقل `artist-profile-preview.html` هم برای مشاهده بدون استخراج دارایی‌ها تهیه شده است.
+- Animated MAHDI wordmark; the exact requested hero statement is preserved.
+- Seven scroll-driven 3D disciplines: Youtube Thumbnails, Posters, Social media Posts, Video Productions, Ai Videos, Web, Printed products.
+- Seven paired playful normal/hover labels; keyboard focus shows the alternate title.
+- Personal introduction, full-screen navigation, category detail dialogs and the Let’s Talk section with the supplied Telegram and Instagram links.
+- The footer’s playful “do NOT click me” interaction resets itself after five seconds.
 
-## انتشار روی Cloudflare Pages
+The current category pictures are generated temporary illustrations, not the owner’s portfolio. Opening a category explicitly identifies the imagery as temporary. Replace them with actual work when provided. The nine-cell asset `dist/assets/category-scenes.webp` is displayed as seven CSS crops; the remaining two cells are unused.
 
-1. در داشبورد Cloudflare، بخش Workers & Pages، ساخت پروژه Pages و Direct Upload را انتخاب کنید.
-2. محتویات `dist` یا فایل `artist-profile-cloudflare.zip` را بارگذاری کنید؛ `index.html` باید در ریشه خروجی باشد.
-3. پس از انتشار، از Custom domains دامنه موجود را متصل کنید و دستورهای DNS همان داشبورد را دنبال کنید. نام دامنه و دسترسی حساب هنوز فراهم نشده‌اند.
+The reference’s publicly served display fonts and decorative assets are in `dist/assets/pixel`. Source URLs are recorded in `ASSET_SOURCES.md`. No director portraits, original projects, original contact details, analytics or remote scripts from the reference are included.
 
-## انتشار با Workers
+## Hosting
 
-از ریشه این پروژه، با دسترسی حساب Cloudflare:
+Cloudflare Pages: framework None, build command empty, output directory `dist`, production branch `main`. Pushes to main automatically publish. The existing Actions workflow uses repository secrets to configure the existing Pages project when its workflow/script changes or when manually requested. Never commit secrets. See `CLOUDFLARE.md`.
+
+## Local preview
 
 ```sh
-npx wrangler login
-npx wrangler deploy
+python3 -m http.server 8080 --directory dist
 ```
 
-فایل `wrangler.jsonc` برای Workers Static Assets تنظیم شده است. دامنه اختصاصی را از تنظیمات Domains & Routes همان Worker اضافه کنید.
+Reduced-motion users get a native horizontal carousel with functioning navigation controls. All seven categories remain usable without the pinned scroll sequence. Built-in dialogs support Escape, focus trapping and keyboard navigation.
 
-## تکمیل اطلاعات
-
-نام مهدی خرسند، تلگرام و اینستاگرام دریافت شده و اضافه شده‌اند. زبان فارسی پیش‌فرض است و دکمه تغییر زبان، نسخه انگلیسی و جهت صفحه را فعال می‌کند. نام پروژه‌ها، تصویر نمونه‌کارها و لینک ویدیوها هنوز از کاربر دریافت نشده‌اند. متن حوزه‌ها از تجربه‌های اعلام‌شده نوشته شده است؛ شرکت، تاریخ یا دستاورد عددی اختراع نشده. گالری فعلی به‌روشنی جای نمونه‌کار است. تصویر کروم لندینگ دارایی هنری تولیدشده برای سایت است، نه نمونه‌کار کاربر.
-
-برای ویدیوها، بعد از دریافت لینک واقعی آپارات، پلیر embed با عنوان دسترس‌پذیر، نسبت تصویر ثابت و بارگذاری تنبل در قاب مناسب قرار می‌گیرد. اکنون دکمه پخش یا ویدیوی ساختگی وجود ندارد.
-
-## بررسی
-
-نمایش مرورگر در عرض‌های ۱۴۴۰، ۳۹۰ و ۳۲۰ پیکسل، بارگذاری تصویر و فونت، کنترل بازشونده رزومه، نمایش با کاهش حرکت و باز شدن بخش‌های رزومه برای چاپ بررسی شده‌اند. خطای JavaScript مشاهده نشد. ذخیره PDF از پنجره چاپ مرورگر انجام می‌شود.
-
-فونت Vazirmatn با مجوز OFL همراه پروژه است. مهارت frontend-design نیز با مجوز خودش در `.agents/skills` نگهداری شده است.
-
-فایل `.openai/hosting.json` مربوط به فضای خصوصی اولیه‌ای است که پیش از انتخاب Cloudflare ساخته شد؛ در بسته Cloudflare وارد نشده و برای این انتشار استفاده نمی‌شود.
+The previous bilingual layout is replaced by the explicitly requested English-only design. The source history retains earlier versions.

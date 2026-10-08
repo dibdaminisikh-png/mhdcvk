@@ -11,3 +11,5 @@ node_modules/
 artist-profile-preview.html
 desktop*.png
 mobile*.png
+review/
+__pycache__/

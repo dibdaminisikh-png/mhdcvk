@@ -1,21 +1,11 @@
-# Visual direction
+# Reference adaptation
 
-A Persian visual résumé composed like a film opening and an artist's contact sheet. One sculptural hero image, oversized Persian type, asymmetric discipline. Avoid fictional employers, dates, metrics or portfolio claims. Supplied work replaces clearly identified empty portfolio slots.
+The user rejected the previous design and explicitly requested a clone of Pixel Melbourne. Fidelity to this reference takes precedence over a new visual direction.
 
-Palette: ink #080b12, paper #f2f4f8, cobalt #315bff, muted #a5adbd, rule #29313e.
-Type: locally hosted Vazirmatn for Persian and system sans for English credits. Right alignment for prose; independent LTR treatment for English titles.
-Layout: full viewport cinematic opening; quiet two-column biography; mixed-size portfolio index; compact résumé rows; closing signature.
+Palette: coral #ff5354 (mobile #fe494a), pink #ffb5d2, electric blue #0800ff, lime #e4fe52, nude #e0c8bb, brown #200e02.
 
-```text
-nav            wordmark
-       full-bleed artwork
-    large Persian title
-credits           scroll
-bio             statement
-wide film        portrait poster
-thumbnail        social typography
-résumé accordion / tools
-contact / closing signature
-```
+Typography: Swell for the wordmark, display titles, skill words and footer; Acumin for controls and prose.
 
-Review: a generic neon-on-black landing would not distinguish the subject. Use cobalt as a filmic light source, typography and variable aspect ratios derived from thumbnails, posters, documentary footage and AI film. Avoid repetitive pill badges, fake skill percentages and fictitious timelines. Scroll reveals are explicitly requested, so use restrained image wipes with readable content if JavaScript fails or reduced motion is enabled.
+Structure: red animated wordmark and three-line statement → nude pinned 3D carousel with seven categories → blue introduction and playful seven-item word garden → pink and blue Let’s Talk footer. The mobile logo repeats three times, as in the reference. Menus, contact details and category copy are adapted to Mahdi.
+
+All headline and brand substitutions follow the user’s explicit instructions. New slide art is temporary, generated and openly identified in category dialogs. No fictional employment, project outcomes or credentials are added.
