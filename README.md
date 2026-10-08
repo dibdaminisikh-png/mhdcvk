@@ -6,13 +6,13 @@ Every page load starts with a split 3D-world entry: an orange streetwear fox in 
 
 Both experiences live in `dist/index.html`. `entry.js` loads only the chosen style’s CSS and scripts, after making its root visible so the existing carousel can measure correctly. `portfolio-data.js` supplies the same seven category names and descriptions to both experiences. All resources are self-hosted and use relative paths for GitHub project Pages.
 
-The classic experience uses Gloock display typography, Acumin body type, an interactive layered glass monogram, mouse-following violet light, asymmetric discipline cards, and distinct plane/shutter/focus/ink/light reveals. Its category dialogs disclose temporary imagery and use the same contact links. Only reveal children are clipped; the observed parent remains measurable so animations cannot permanently hide content.
+The classic experience uses Gloock display typography, Acumin body type, an interactive layered glass monogram, mouse-following violet light, asymmetric discipline cards, and distinct plane/shutter/focus/ink/light reveals. Its category dialogs disclose temporary imagery and use the same contact links. Reveal progress follows scroll position in both directions: scrolling up reverses the same motion, and scrolling down rebuilds it. Cached layout coordinates ignore transforms to keep progress stable. The six glass tool icons (Photoshop, Illustrator, Premier, After effects, Ui/Ux, Ai Tools) smoothly take their brand colours within 60px of the mouse. On touch devices, each icon lights progressively through its own scroll position and dims in reverse. Telegram and Instagram contact buttons temporarily take their brand colours on mouse hover, keyboard focus or finger contact; touch release, cancellation and leaving the button restore their glass appearance.
 
 ## Contents
 
 The following describes the preserved funky experience:
 
-- MAHDI wordmark with a staggered outline-to-solid 3D rotation, adapted from the reference’s video loop; the exact requested hero statement is preserved.
+- MAHDI wordmark with a staggered outline-to-solid 3D rotation, adapted from the reference’s video loop, with a 4.94-second cycle and a one-second shorter solid hold; the exact requested hero statement is preserved.
 - Seven scroll-driven 3D disciplines: Youtube Thumbnails, Posters, Social media Posts, Video Productions, Ai Videos, Web, Printed products.
 - Seven paired playful normal/hover labels; keyboard focus shows the alternate title.
 - Personal introduction, a sidebar with staggered coral/lime/pink panels, category detail dialogs and the Let’s Talk section with the supplied Telegram and Instagram links.

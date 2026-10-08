@@ -27,35 +27,61 @@
   dialog.addEventListener('click', event => {if (event.target === dialog) dialog.close();});
   dialog.addEventListener('close', () => document.body.classList.remove('c-dialog-open'));
 
-  // Content exists immediately; the observer only reveals it as it enters the viewport.
-  root.classList.add('c-motion');
-  const reveals = [...root.querySelectorAll('[data-reveal]')];
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('is-visible');observer.unobserve(entry.target);
-    });
-  }, {threshold:.12,rootMargin:'0px 0px -25px 0px'});
-  reveals.forEach(el => observer.observe(el));
-  function adaptMotion() {
-    if (reduced.matches) reveals.forEach(el => el.classList.add('is-visible'));
-    root.classList.toggle('c-motion',!reduced.matches);
+  const clamp = value => Math.max(0,Math.min(1,value));
+  const smooth = value => value*value*(3-2*value);
+  // Layout coordinates ignore reveal transforms, so scrubbing never feeds back into measurement.
+  function documentTop(el) {
+    let top = 0;
+    for (let node = el;node;node = node.offsetParent) top += node.offsetTop;
+    return top;
   }
-  reduced.addEventListener('change',adaptMotion);adaptMotion();
-
-  let pointer = null, pointerFrame = 0;
+  function pausedAnimation(el,from,to) {
+    const animation = el.animate([from,to],{duration:1000,fill:'both',easing:'cubic-bezier(.16,1,.3,1)'});
+    animation.pause();animation.currentTime = 0;
+    return animation;
+  }
+  const reveals = [...root.querySelectorAll('[data-reveal]')].map(el => {
+    const animations = [];
+    const style = el.dataset.reveal;
+    if (style === 'plane') animations.push(pausedAnimation(el,{opacity:0,transform:'perspective(1200px) rotateX(12deg) translateY(55px)'},{opacity:1,transform:'none'}));
+    if (style === 'shutter') {
+      animations.push(pausedAnimation(el,{transform:'translateY(20px)'},{transform:'none'}));
+      animations.push(pausedAnimation(el.querySelector('.c-card-inner'),{clipPath:'inset(0 0 100% 0 round 18px)'},{clipPath:'inset(0 0 0 0 round 18px)'}));
+    }
+    if (style === 'focus') animations.push(pausedAnimation(el,{opacity:0,filter:'blur(12px)',transform:'scale(.96)'},{opacity:1,filter:'blur(0px)',transform:'none'}));
+    if (style === 'ink') {
+      animations.push(pausedAnimation(el,{opacity:0,transform:'translateX(-20px)'},{opacity:1,transform:'none'}));
+      [...el.children].forEach(child => animations.push(pausedAnimation(child,{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)'})));
+    }
+    if (style === 'light') animations.push(pausedAnimation(el,{opacity:0,filter:'blur(6px)',transform:'translateY(20px)'},{opacity:1,filter:'blur(0px)',transform:'none'}));
+    return {el,animations,top:0,value:-1};
+  });
+  const tools = [...root.querySelectorAll('.c-tool')].map(el => ({el,icon:el.querySelector('.c-tool-icon'),top:0,value:-1}));
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+  let pointer = null, pointerFrame = 0, lastPointerType = finePointer.matches ? 'mouse' : 'touch';
   const composition = root.querySelector('.c-composition');
   function updatePointer() {
-    pointerFrame = 0;if (!pointer || reduced.matches) return;
+    pointerFrame = 0;
+    updateToolLights();
+    if (!pointer || reduced.matches) return;
     root.style.setProperty('--c-x',`${pointer.x}px`);root.style.setProperty('--c-y',`${pointer.y}px`);
     const rect = composition.getBoundingClientRect();
     composition.style.setProperty('--rx',String(Math.max(-1,Math.min(1,(pointer.x-(rect.left+rect.width/2))/innerWidth*2))));
     composition.style.setProperty('--ry',String(Math.max(-1,Math.min(1,(pointer.y-(rect.top+rect.height/2))/innerHeight*2))));
   }
   root.addEventListener('pointermove',event => {
-    if (event.pointerType !== 'mouse' || reduced.matches) return;
+    if (event.pointerType !== 'mouse') return;
+    lastPointerType = 'mouse';
     pointer = {x:event.clientX,y:event.clientY};
     if (!pointerFrame) pointerFrame = requestAnimationFrame(updatePointer);
+  },{passive:true});
+  root.addEventListener('pointerleave',event => {
+    if (event.pointerType !== 'mouse') return;
+    pointer = null;updateToolLights();
+  });
+  root.addEventListener('pointerdown',event => {
+    lastPointerType = event.pointerType;
+    if (event.pointerType !== 'mouse') {pointer = null;updateToolLights();}
   },{passive:true});
   root.querySelectorAll('.c-card-inner').forEach(card => {
     card.addEventListener('pointermove',event => {
@@ -69,10 +95,76 @@
   });
   const progress = root.querySelector('.c-progress');
   let scrollFrame = 0;
+  function updateToolLights() {
+    const scrollLighting = lastPointerType !== 'mouse';
+    const rectangles = !scrollLighting && pointer ? tools.map(tool => tool.icon.getBoundingClientRect()) : [];
+    tools.forEach((tool,index) => {
+      let value = 0;
+      if (scrollLighting) value = smooth(clamp((innerHeight*.78-(tool.top-scrollY))/Math.max(1,innerHeight*.22)));
+      else if (pointer && !dialog.open) {
+        const rect = rectangles[index];
+        const dx = Math.max(rect.left-pointer.x,0,pointer.x-rect.right);
+        const dy = Math.max(rect.top-pointer.y,0,pointer.y-rect.bottom);
+        value = smooth(clamp(1-Math.hypot(dx,dy)/60));
+      }
+      if (Math.abs(value-tool.value) > .001) {
+        tool.value = value;tool.icon.style.setProperty('--tool-light',value.toFixed(4));
+      }
+    });
+  }
   function updateScroll() {
     scrollFrame = 0;
     progress.style.transform = `scaleX(${Math.max(0,Math.min(1,scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)))})`;
+    reveals.forEach(scene => {
+      const value = reduced.matches ? 1 : clamp((innerHeight*.9-(scene.top-scrollY))/Math.max(1,innerHeight*.34));
+      if (Math.abs(value-scene.value) < .0001) return;
+      scene.value = value;scene.animations.forEach(animation => animation.currentTime = value*1000);
+      scene.el.classList.toggle('is-visible',value >= .999);
+    });
+    updateToolLights();
   }
-  addEventListener('scroll', () => {if (!scrollFrame) scrollFrame = requestAnimationFrame(updateScroll);},{passive:true});
-  addEventListener('resize',updateScroll);updateScroll();
+  function scheduleScroll() {if (!scrollFrame) scrollFrame = requestAnimationFrame(updateScroll);}
+  function measure() {
+    reveals.forEach(scene => scene.top = documentTop(scene.el));
+    tools.forEach(tool => tool.top = documentTop(tool.icon)+tool.icon.offsetHeight/2);
+    updateScroll();
+  }
+  root.addEventListener('focusin',event => {
+    const scene = reveals.find(scene => scene.el.contains(event.target));
+    if (scene && scene.value < .99) {
+      scene.el.scrollIntoView({block:'center',behavior:'instant'});updateScroll();
+    }
+  });
+  addEventListener('scroll',scheduleScroll,{passive:true});
+  addEventListener('resize',measure);
+  reduced.addEventListener('change',measure);
+  finePointer.addEventListener('change', () => {lastPointerType = finePointer.matches ? 'mouse' : 'touch';pointer = null;measure();});
+  // Font loading and responsive wrapping can move later sections without a window resize.
+  new ResizeObserver(measure).observe(root);
+  document.fonts.ready.then(measure);
+  dialog.addEventListener('close',scheduleScroll);
+  measure();
+
+  const socialButtons = [...root.querySelectorAll('.c-contact-links .c-button')];
+  socialButtons.forEach(button => {
+    let touchId = null;
+    button.addEventListener('pointerenter',event => {if (event.pointerType === 'mouse') button.classList.add('is-pointed');});
+    button.addEventListener('pointerleave', () => button.classList.remove('is-pointed','is-pressed'));
+    button.addEventListener('pointerdown',event => {
+      if (event.pointerType === 'mouse') return;
+      touchId = event.pointerId;button.classList.add('is-pressed');
+      button.setPointerCapture(event.pointerId);
+    });
+    button.addEventListener('pointermove',event => {
+      if (touchId !== event.pointerId) return;
+      const rect = button.getBoundingClientRect();
+      button.classList.toggle('is-pressed',event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom);
+    },{passive:true});
+    function release(event) {
+      if (event && touchId !== event.pointerId) return;
+      touchId = null;button.classList.remove('is-pressed');
+    }
+    ['pointerup','pointercancel','lostpointercapture'].forEach(name => button.addEventListener(name,release));
+    addEventListener('blur', () => {release();button.classList.remove('is-pointed');});
+  });
 })();

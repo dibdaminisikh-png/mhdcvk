@@ -1,4 +1,4 @@
-/* MAHDI outlines, projected as rotating extruded letters on the reference's 5.94s loop. */
+/* MAHDI outlines on a 4.94s loop, with one second removed from the solid hold. */
 (() => {
   'use strict';
   const host = document.querySelector('.hero-logo');
@@ -70,10 +70,10 @@
       }
       function paint(time) {
         frame = 0;
-        const phase = time / 1000 % 5.94;
+        const phase = time / 1000 % 4.94;
         copies.forEach(({letters}) => letters.forEach((letter, i) => {
           const entering = (phase - .12 - i * .105) / .65;
-          const leaving = (phase - 4.85 - (4 - i) * .105) / .65;
+          const leaving = (phase - 3.85 - (4 - i) * .105) / .65;
           renderLetter(letter, reduced.matches ? 1 : Math.max(0, Math.min(1, entering, 1 - leaving)), i);
         }));
         if (visible && !reduced.matches && !document.hidden) frame = requestAnimationFrame(paint);
