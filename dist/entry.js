@@ -36,13 +36,22 @@
     if (files.has(key)) return files.get(key);
     const promise = new Promise((resolve,reject) => {
       const el = document.createElement(type === 'style' ? 'link' : 'script');
-      if (type === 'style') {el.rel = 'stylesheet';el.href = `${path}?v=smooth-20261008`;}
-      else {el.src = `${path}?v=smooth-20261008`;el.async = false;}
+      if (type === 'style') {el.rel = 'stylesheet';el.href = `${path}?v=load-20261008`;}
+      else {el.src = `${path}?v=load-20261008`;el.async = false;}
       el.onload = resolve;
       el.onerror = () => {files.delete(key);el.remove();reject(new Error('Style could not load'));};
       document.head.append(el);
     });
     files.set(key,promise);return promise;
+  }
+  function preloadScripts(paths) {
+    paths.forEach(path => {
+      const key = `preload:${path}`;
+      if (files.has(key)) return;
+      const link = document.createElement('link');
+      link.rel = 'preload';link.as = 'script';link.href = `${path}?v=load-20261008`;
+      document.head.append(link);files.set(key,true);
+    });
   }
   async function enter(mode) {
     if (choosing) return;
@@ -56,9 +65,13 @@
       document.body.dataset.mode = mode;document.body.classList.add('is-entering');root.hidden = false;
       document.querySelector('meta[name="theme-color"]').content = mode === 'funky' ? '#ff5354' : '#0c1023';
       if (mode === 'funky') {
-        await loadFile('app.js','script');
+        // Fetch together; initialize the independent logo before measuring scroll.
+        // The mobile SVG copies change hero height. app must measure that final height.
+        preloadScripts(['app.js','logo-motion.js','interactions.js']);
         await loadFile('logo-motion.js','script');
-        await loadFile('assets/vendor/matter.min.js','script');
+        await window.PortfolioLogoReady;
+        await loadFile('app.js','script');
+        // app's dialog handlers must be installed before interactions' handlers.
         await loadFile('interactions.js','script');
       } else await loadFile('classic.js','script');
       entry.classList.add('is-leaving');status.textContent = '';
@@ -68,6 +81,7 @@
       window.scrollTo({top:0,behavior:'instant'});
       const heading = root.querySelector('h1');
       heading.tabIndex = -1;heading.focus({preventScroll:true});
+      if (mode === 'funky') root.dispatchEvent(new Event('portfolio:ready'));
     } catch (error) {
       root.hidden = true;document.body.dataset.mode = 'choose';document.body.classList.remove('is-entering');
       entry.classList.remove('is-leaving');status.textContent = 'Couldn’t open this style. Please try again.';

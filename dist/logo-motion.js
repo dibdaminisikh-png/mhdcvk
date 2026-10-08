@@ -9,7 +9,7 @@
   const ease = t => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3);
   let copies = [], visible = true, frame = 0;
 
-  fetch(new URL('assets/mahdi-outlines.json', document.baseURI))
+  window.PortfolioLogoReady = fetch(new URL('assets/mahdi-outlines.json', document.baseURI))
     .then(response => { if (!response.ok) throw new Error('Logo outlines unavailable'); return response.json(); })
     .then(glyphs => {
       function makeLogo() {

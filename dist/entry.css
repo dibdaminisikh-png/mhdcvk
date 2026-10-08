@@ -1,7 +1,7 @@
-@font-face{font-family:Swell;src:url('assets/pixel/Swell-Regular.otf') format('opentype');font-display:swap}
-@font-face{font-family:Acumin;src:url('assets/pixel/AcuminVariableConcept.otf') format('opentype');font-weight:100 900;font-display:swap}
-@font-face{font-family:Gloock;src:url('assets/Gloock-Regular.ttf') format('truetype');font-display:swap}
-@font-face{font-family:Caveat;src:url('assets/Caveat-latin.ttf') format('truetype');font-weight:400 700;font-display:swap}
+@font-face{font-family:Swell;src:url('assets/pixel/Swell-Regular.woff2?v=load-20261008') format('woff2');font-display:swap}
+@font-face{font-family:Acumin;src:url('assets/pixel/AcuminVariableConcept.woff2?v=load-20261008') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:Gloock;src:url('assets/Gloock-Regular.woff2?v=load-20261008') format('woff2');font-display:swap}
+@font-face{font-family:Caveat;src:url('assets/Caveat-latin.woff2?v=load-20261008') format('woff2');font-weight:400 700;font-display:swap}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}

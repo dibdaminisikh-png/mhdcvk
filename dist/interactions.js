@@ -65,6 +65,37 @@
   });
 
   const chaosButton = document.querySelector('#dont-click');
+  let matterReady = null;
+  function loadMatter() {
+    if (typeof Matter !== 'undefined') return Promise.resolve();
+    if (matterReady) return matterReady;
+    matterReady = new Promise((resolve,reject) => {
+      const script = document.createElement('script');
+      script.src = 'assets/vendor/matter.min.js?v=load-20261008';
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = () => {
+        matterReady = null;script.remove();reject(new Error('Physics could not load'));
+      };
+      document.head.append(script);
+    });
+    return matterReady;
+  }
+  function warmPhysics() {loadMatter().catch(() => {});}
+  // Physics is not part of entry. Warm its single shared request once Funky is ready.
+  document.querySelector('#funky-root').addEventListener('portfolio:ready', () => {
+    if ('requestIdleCallback' in window) requestIdleCallback(warmPhysics,{timeout:1000});
+    else setTimeout(warmPhysics,0);
+    const footerObserver = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        warmPhysics();footerObserver.disconnect();
+      }
+    },{rootMargin:'1500px'});
+    footerObserver.observe(document.querySelector('#footer'));
+  },{once:true});
+  chaosButton.addEventListener('pointerenter',warmPhysics);
+  chaosButton.addEventListener('pointerdown',warmPhysics,{passive:true});
+  chaosButton.addEventListener('focus',warmPhysics);
   let session = null;
   function restore() {
     if (!session) return;
@@ -197,5 +228,6 @@
   }
   chaosButton.addEventListener('click', () => {
     if (typeof Matter !== 'undefined') startPhysics();
+    else loadMatter().then(startPhysics).catch(() => {});
   });
 })();
