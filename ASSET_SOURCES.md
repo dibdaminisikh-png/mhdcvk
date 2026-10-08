@@ -22,3 +22,9 @@ Category art: original generated 3×3 contact sheet produced for the current ada
 Matter.js 0.19.0, the MIT-licensed physics library used by the reference, is self-hosted at `dist/assets/vendor/matter.min.js`:
 - Source distribution: https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js
 - License: https://github.com/liabru/matter-js/blob/0.19.0/LICENSE (included as `MATTER-LICENSE.txt`).
+
+Split-world entry art: generated for this brief, copied unchanged to `dist/assets/style-worlds.png`. The two 3D scenes share one diptych asset; CSS displays each half with pointer parallax. Characters are fictional entry mascots, not portfolio pieces or the owner's portrait.
+
+Classic display font: Gloock, locally served as `dist/assets/Gloock-Regular.ttf`.
+- Font distribution: https://fonts.gstatic.com/s/gloock/v8/Iurb6YFw84WUY4N5jw.ttf
+- SIL Open Font License: https://github.com/google/fonts/blob/main/ofl/gloock/OFL.txt (included as `Gloock-OFL.txt`).

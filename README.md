@@ -1,8 +1,16 @@
 # MAHDI
 
-Mahdi Khorsand’s one-page English portfolio, rebuilt around the layout and interactions of https://pixel.melbourne/ at the owner’s request. Published at https://dibdaminisikh-png.github.io/mhdcvk/ through GitHub Actions, with the existing Cloudflare Pages integration at https://mhdcvk.pages.dev.
+Mahdi Khorsand’s one-page English portfolio with two visual styles, published at https://dibdaminisikh-png.github.io/mhdcvk/ through GitHub Actions, with the existing Cloudflare Pages integration at https://mhdcvk.pages.dev.
+
+Every page load starts with a split 3D-world entry: an orange streetwear fox in a coral world and a tuxedoed pianist in a violet glass world. “I’m funky” opens the existing Pixel-inspired portfolio; “I’m classic” opens a new navy/silver/violet glass portfolio. Selection stays in memory for the current visit only. Refresh always returns to the entry, including after visiting section anchors. There is no style-switch control and no choice is saved in browser storage or the URL.
+
+Both experiences live in `dist/index.html`. `entry.js` loads only the chosen style’s CSS and scripts, after making its root visible so the existing carousel can measure correctly. `portfolio-data.js` supplies the same seven category names and descriptions to both experiences. All resources are self-hosted and use relative paths for GitHub project Pages.
+
+The classic experience uses Gloock display typography, Acumin body type, an interactive layered glass monogram, mouse-following violet light, asymmetric discipline cards, and distinct plane/shutter/focus/ink/light reveals. Its category dialogs disclose temporary imagery and use the same contact links. Only reveal children are clipped; the observed parent remains measurable so animations cannot permanently hide content.
 
 ## Contents
+
+The following describes the preserved funky experience:
 
 - MAHDI wordmark with a staggered outline-to-solid 3D rotation, adapted from the reference’s video loop; the exact requested hero statement is preserved.
 - Seven scroll-driven 3D disciplines: Youtube Thumbnails, Posters, Social media Posts, Video Productions, Ai Videos, Web, Printed products.
@@ -31,4 +39,4 @@ Reduced-motion users get a native horizontal carousel with functioning navigatio
 
 The logo is a static solid wordmark and the menu opens immediately with reduced motion. Physics only starts after the visitor explicitly clicks its trigger. Matter.js is served locally with its MIT license; no CDN script request is required. Logo rendering pauses offscreen, and physics pauses when the tab is hidden.
 
-The previous bilingual layout is replaced by the explicitly requested English-only design. The source history retains earlier versions.
+Both current styles are English-only. The source history retains earlier designs.

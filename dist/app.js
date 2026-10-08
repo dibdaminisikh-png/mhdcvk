@@ -1,15 +1,7 @@
 (() => {
   'use strict';
-  const names = ['Youtube Thumbnails', 'Posters', 'Social media Posts', 'Video Productions', 'Ai Videos', 'Web', 'Printed products'];
-  const descriptions = [
-    'Bold compositions, expressive imagery and a little visual mischief. Thumbnails designed to make the first impression count.',
-    'Big ideas on a single page. Posters that bring imagery, type and composition together with personality.',
-    'A little less scrolling, a little more stopping. Social posts built around a clear visual identity.',
-    'Real people, real stories, and the occasional long day on set. Documentary production with a filming crew, followed by editing that shapes the story.',
-    'Ideas that do not need to wait for a camera. AI-generated teasers, brought together with design, editing and a curious eye.',
-    'A corner of the internet with a personality. Creative web concepts and visual experiences.',
-    'Ideas you can actually hold. Posters, stationery, packaging and other printed possibilities.'
-  ];
+  const names = window.Portfolio.categories.map(category => category.title);
+  const descriptions = window.Portfolio.categories.map(category => category.description);
   const reducedQuery = matchMedia('(prefers-reduced-motion: reduce)');
   let reduced = reducedQuery.matches;
   const carousel = document.querySelector('.carousel');
