@@ -19,8 +19,8 @@ body[data-mode="classic"]{background:#0c1023;color:#eeedf6;font-family:Acumin,Ar
 .c-hero-actions{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
 .c-button{position:relative;display:inline-flex;justify-content:center;align-items:center;gap:14px;border:1px solid #e6d7ff38;border-radius:10px;padding:16px 23px;background:linear-gradient(120deg,#c4a6ff26,#c4a6ff0a);color:#f6f2ff;text-decoration:none;font-size:15px;font-weight:500;overflow:hidden;backdrop-filter:blur(20px);box-shadow:inset 0 1px 0 #ffffff12;transition:transform .3s,border-color .3s,box-shadow .3s}
 .c-button::before{content:"";position:absolute;inset:0;transform:translateX(-105%) skewX(-20deg);background:linear-gradient(90deg,transparent,#ffffff15,transparent);transition:transform .6s}
-.c-button:hover{transform:translateY(-3px);border-color:#d8c5ff80;box-shadow:0 12px 40px #7c4bd526}
-.c-button:hover::before{transform:translateX(105%) skewX(-20deg)}
+.c-button:hover:not(.c-social){transform:translateY(-3px);border-color:#d8c5ff80;box-shadow:0 12px 40px #7c4bd526}
+.c-button:hover:not(.c-social)::before{transform:translateX(105%) skewX(-20deg)}
 .c-button svg{width:17px;height:17px}
 .c-text-link{font-size:15px;color:#ccc4e1;text-underline-offset:6px;text-decoration-color:#bba3de66;transition:color .3s}
 .c-text-link:hover{color:white}
@@ -99,6 +99,8 @@ body[data-mode="classic"]{background:#0c1023;color:#eeedf6;font-family:Acumin,Ar
 .c-social::after{content:"";position:absolute;inset:0;z-index:-1;background:var(--social-gradient);opacity:0;transition:opacity .28s}
 .c-social:is(.is-pointed,.is-pressed,:focus-visible){border-color:var(--social-color);box-shadow:0 8px 30px var(--social-glow),inset 0 1px 0 #ffffff25;color:white}
 .c-social:is(.is-pointed,.is-pressed,:focus-visible)::after{opacity:1}
+.c-social.is-pointed{transform:translateY(-3px)}
+.c-social.is-pointed::before{transform:translateX(105%) skewX(-20deg)}
 .c-social svg{width:19px;height:19px}
 .c-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:32px 0;border-top:1px solid var(--c-line);font-size:13px;color:#9994af}
 .c-footer a{text-decoration:none;color:#c1b8d8}
