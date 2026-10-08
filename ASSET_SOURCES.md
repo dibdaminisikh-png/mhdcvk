@@ -28,3 +28,7 @@ Split-world entry art: generated for this brief, copied unchanged to `dist/asset
 Classic display font: Gloock, locally served as `dist/assets/Gloock-Regular.ttf`.
 - Font distribution: https://fonts.gstatic.com/s/gloock/v8/Iurb6YFw84WUY4N5jw.ttf
 - SIL Open Font License: https://github.com/google/fonts/blob/main/ofl/gloock/OFL.txt (included as `Gloock-OFL.txt`).
+
+Entry caption font: Caveat, a Latin subset locally served as `dist/assets/Caveat-latin.ttf`, preserving its 400–700 variable weight range.
+- Source font: https://github.com/google/fonts/blob/main/ofl/caveat/Caveat%5Bwght%5D.ttf
+- SIL Open Font License: https://github.com/google/fonts/blob/main/ofl/caveat/OFL.txt (included as `Caveat-OFL.txt`).

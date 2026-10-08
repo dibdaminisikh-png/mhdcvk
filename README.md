@@ -2,6 +2,8 @@
 
 Mahdi Khorsand’s one-page English portfolio with two visual styles, published at https://dibdaminisikh-png.github.io/mhdcvk/ through GitHub Actions, with the existing Cloudflare Pages integration at https://mhdcvk.pages.dev.
 
+A compact Caveat handwritten caption under “What’s your style?” reads “Because / your taste matters. ✦”. It rests at −3° in creamy white, with “your taste” slightly larger. A damped hanging-sign swing plays after the page and fonts load, and repeats on mouse entry or touch. Reduced motion keeps it still.
+
 Every page load starts with a split 3D-world entry: an orange streetwear fox in a coral world and a tuxedoed pianist in a violet glass world. “I’m funky” opens the existing Pixel-inspired portfolio; “I’m classic” opens a new navy/silver/violet glass portfolio. Selection stays in memory for the current visit only. Refresh always returns to the entry, including after visiting section anchors. There is no style-switch control and no choice is saved in browser storage or the URL.
 
 Both experiences live in `dist/index.html`. `entry.js` loads only the chosen style’s CSS and scripts, after making its root visible so the existing carousel can measure correctly. `portfolio-data.js` supplies the same seven category names and descriptions to both experiences. All resources are self-hosted and use relative paths for GitHub project Pages.

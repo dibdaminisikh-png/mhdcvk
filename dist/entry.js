@@ -4,20 +4,40 @@
   const status = document.querySelector('.entry-status');
   const buttons = [...document.querySelectorAll('.choose-style')];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const caption = document.querySelector('.entry-caption');
   const files = new Map();
-  let choosing = false;
+  let choosing = false, captionAnimation = null;
   history.scrollRestoration = 'manual';
   // A reload always starts at the choice, even after a portfolio anchor was visited.
   if (location.hash) history.replaceState(null,'',location.pathname+location.search);
   window.scrollTo({top:0,behavior:'instant'});
+
+  function swingCaption() {
+    if (reduced.matches || choosing || entry.hidden) return;
+    const resting = getComputedStyle(caption).transform;
+    captionAnimation?.cancel();
+    captionAnimation = caption.animate([
+      {transform:resting},
+      {transform:'rotate(2.5deg)',offset:.18},
+      {transform:'rotate(-6deg)',offset:.42},
+      {transform:'rotate(-1deg)',offset:.65},
+      {transform:'rotate(-3.7deg)',offset:.83},
+      {transform:'rotate(-3deg)'}
+    ],{duration:1250,easing:'ease-in-out'});
+  }
+  const pageReady = document.readyState === 'complete' ? Promise.resolve() : new Promise(resolve => addEventListener('load',resolve,{once:true}));
+  Promise.all([pageReady,document.fonts.ready]).then(swingCaption);
+  caption.addEventListener('pointerenter',event => {if (event.pointerType === 'mouse') swingCaption();});
+  caption.addEventListener('pointerdown',event => {if (event.pointerType !== 'mouse') swingCaption();});
+  reduced.addEventListener('change', () => {if (reduced.matches) captionAnimation?.cancel();});
 
   function loadFile(path,type) {
     const key = `${type}:${path}`;
     if (files.has(key)) return files.get(key);
     const promise = new Promise((resolve,reject) => {
       const el = document.createElement(type === 'style' ? 'link' : 'script');
-      if (type === 'style') {el.rel = 'stylesheet';el.href = `${path}?v=scrub-touch-20261008`;}
-      else {el.src = `${path}?v=scrub-touch-20261008`;el.async = false;}
+      if (type === 'style') {el.rel = 'stylesheet';el.href = `${path}?v=caption-20261008`;}
+      else {el.src = `${path}?v=caption-20261008`;el.async = false;}
       el.onload = resolve;
       el.onerror = () => {files.delete(key);el.remove();reject(new Error('Style could not load'));};
       document.head.append(el);
@@ -27,6 +47,7 @@
   async function enter(mode) {
     if (choosing) return;
     choosing = true;buttons.forEach(button => button.disabled = true);
+    captionAnimation?.cancel();
     entry.setAttribute('aria-busy','true');status.textContent = 'Opening your world…';
     const root = document.querySelector(`#${mode}-root`);
     try {

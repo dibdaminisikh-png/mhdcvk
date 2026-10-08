@@ -1,6 +1,7 @@
 @font-face{font-family:Swell;src:url('assets/pixel/Swell-Regular.otf') format('opentype');font-display:swap}
 @font-face{font-family:Acumin;src:url('assets/pixel/AcuminVariableConcept.otf') format('opentype');font-weight:100 900;font-display:swap}
 @font-face{font-family:Gloock;src:url('assets/Gloock-Regular.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Caveat;src:url('assets/Caveat-latin.ttf') format('truetype');font-weight:400 700;font-display:swap}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
@@ -12,7 +13,13 @@ a{color:inherit}
 button:focus-visible,a:focus-visible{outline:3px solid currentColor;outline-offset:6px}
 .style-entry{position:fixed;inset:0;z-index:200;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;isolation:isolate;color:#fff}
 .entry-brand{position:absolute;left:32px;top:26px;z-index:5;font:400 34px/1 Swell,Impact,sans-serif;color:#e4fe52;text-decoration:none}
-.entry-question{position:absolute;left:50%;top:28px;transform:translateX(-50%);z-index:5;text-align:center;margin:0;white-space:nowrap;font-size:16px;font-weight:600;padding:11px 24px;background:#15132955;backdrop-filter:blur(20px);border:1px solid #ffffff24;border-radius:40px;letter-spacing:.02em}
+.entry-prompt{position:absolute;left:50%;top:28px;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;text-align:center}
+.entry-question{margin:0;white-space:nowrap;font-size:16px;font-weight:600;padding:11px 24px;background:#15132955;backdrop-filter:blur(20px);border:1px solid #ffffff24;border-radius:40px;letter-spacing:.02em}
+.entry-caption{margin:6px 0 0;color:#fff3dd;font:500 19px/1.1 Caveat,cursive;transform:rotate(-3deg);transform-origin:50% -7px;text-shadow:0 1px 8px #43293b50}
+.entry-caption-because{display:block;font-size:15px;line-height:1.1;margin-bottom:1px}
+.entry-caption-line{display:block;white-space:nowrap}
+.entry-caption strong{font-size:22px;font-weight:600}
+.entry-caption-star{display:inline-block;margin-left:1px;vertical-align:.08em;font:12px/1 Georgia,serif;opacity:.85}
 .style-world{position:relative;height:100%;min-width:0;overflow:hidden;perspective:1200px;isolation:isolate;transition:transform .8s cubic-bezier(.65,.01,.05,.99),opacity .7s}
 .world-funky{background:#ff5354;color:#e4fe52;z-index:2;clip-path:polygon(0 0,100% 0,94% 14%,100% 25%,95% 36%,100% 48%,93% 64%,100% 76%,96% 89%,100% 100%,0 100%)}
 .world-classic{background:#101126;color:#f3efff;margin-left:-30px;padding-left:30px}
@@ -39,14 +46,19 @@ button:focus-visible,a:focus-visible{outline:3px solid currentColor;outline-offs
 .entry-status{position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:5;font-size:13px;color:#fff;min-height:18px;margin:0;pointer-events:none}
 .style-entry.is-leaving .world-funky{transform:translateX(-100%)}
 .style-entry.is-leaving .world-classic{transform:translateX(100%)}
-.style-entry.is-leaving .entry-brand,.style-entry.is-leaving .entry-question,.style-entry.is-leaving .entry-crack,.style-entry.is-leaving .entry-status{opacity:0;transition:opacity .25s}
+.style-entry.is-leaving .entry-brand,.style-entry.is-leaving .entry-prompt,.style-entry.is-leaving .entry-crack,.style-entry.is-leaving .entry-status{opacity:0;transition:opacity .25s}
 body.is-entering{overflow:hidden}
 .entry-noscript{position:fixed;z-index:300;bottom:10px;left:10px;right:10px;padding:12px;background:#101126;color:white;text-align:center}
 @media(min-width:1700px){.world-copy{bottom:7vh}}
 @media(max-width:700px){
  .style-entry{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
  .entry-brand{left:18px;top:19px;font-size:28px}
- .entry-question{top:16px;left:auto;right:15px;transform:none;font-size:13px;padding:8px 14px}
+ .entry-prompt{top:16px;left:auto;right:15px;transform:none}
+ .entry-question{font-size:13px;padding:8px 14px}
+ .entry-caption{margin-top:4px;font-size:17px}
+ .entry-caption-because{font-size:14px}
+ .entry-caption strong{font-size:20px}
+ .entry-caption-star{font-size:10px}
  .world-funky{clip-path:polygon(0 0,100% 0,100% 96%,88% 100%,75% 94%,61% 100%,48% 95%,33% 100%,18% 94%,0 100%)}
  .world-classic{margin-left:0;padding-left:0;margin-top:-14px;padding-top:14px}
  .world-visual img{object-position:center 42%}
